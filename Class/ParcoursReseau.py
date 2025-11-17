@@ -14,7 +14,7 @@ class ParcoursReseau:
 
     def bfs(self, station_depart):
         """
-                Parcours BFS à partir d'une station.
+                Parcours BFS à partir d'une station. (BFS = Breadth-First Search)
                 Retourne l'ordre de visite.
         """
         if station_depart not in self.reseau.index_par_nom:  # Si la station de départ n'existe pas dans le réseau, on stoppe immédiatement
@@ -28,4 +28,37 @@ class ParcoursReseau:
         deja_vu.add(station_depart)  # On marque la station comme déjà vue
 
         #Tant qu'il reste des éléments dans la liste
+        while file:
+            station_courante = file.popleft()  # On retire la station en tête de file (FIFO)
+            visites.append(station_courante)  # On ajoute cette station dans l'ordre de visite
 
+            # On parcourt tous les voisins accessibles depuis la station courante
+            for voisin in self.reseau.voisins(station_courante):
+                if voisin not in deja_vu:  # Si le voisin n'a pas déjà été visité
+                    deja_vu.add(voisin)  # On le marque comme visité
+                    file.append(voisin)  # On l'ajoute en fin de file pour le traiter plus tard
+
+        return visites  # On renvoie l'ordre complet du parcours BFS
+
+
+# ============================================================
+# Test du bfs
+# ============================================================
+if __name__ == "__main__":
+    from ReseauUrbain import ReseauUrbain   # On importe la classe réseau pour pouvoir tester
+
+    r = ReseauUrbain()       # Création d’un réseau vide
+    r.ajouter_station("A")   # Ajout de 4 stations
+    r.ajouter_station("B")
+    r.ajouter_station("C")
+    r.ajouter_station("D")
+
+    # Ajout de routes (liaisons) entre stations
+    r.ajouter_route("A", "B", 1, 1)
+    r.ajouter_route("A", "C", 1, 1)
+    r.ajouter_route("B", "D", 1, 1)
+    r.ajouter_route("C", "D", 1, 1)
+
+    parcours = ParcoursReseau(r)   # On crée l’objet permettant d'utiliser BFS/DFS
+
+    print("BFS depuis A :", parcours.bfs("A"))   # Test du BFS
