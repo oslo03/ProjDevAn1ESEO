@@ -21,7 +21,7 @@ class ParcoursReseau:
             raise ValueError("Station inconnue dans le réseau") # et on signale l'erreur pour éviter un parcours impossible.
 
         visites = []  # Pour enregistrer l'ordre des stations visitées
-        file = deque()  # Pour stocker les stations a visité bientot file FIFO
+        file = deque()  # Pour stocker les stations a visité bientôt file FIFO
         deja_vu = set()  # Pour ne jamais repasser sur une station déjà vue (sinon boucle infinie).
 
         file.append(station_depart)  # On place la station de départ dans la file
@@ -48,16 +48,16 @@ if __name__ == "__main__":
     from ReseauUrbain import ReseauUrbain   # On importe la classe réseau pour pouvoir tester
 
     r = ReseauUrbain()       # Création d’un réseau vide
-    r.ajouter_station("A")   # Ajout de 4 stations
-    r.ajouter_station("B")
-    r.ajouter_station("C")
-    r.ajouter_station("D")
+    r.addRoad("A")   # Ajout de 4 stations
+    r.addRoad("B")
+    r.addRoad("C")
+    r.addRoad("D")
 
     # Ajout de routes (liaisons) entre stations
-    r.ajouter_route("A", "B", 1, 1)
-    r.ajouter_route("A", "C", 1, 1)
-    r.ajouter_route("B", "D", 1, 1)
-    r.ajouter_route("C", "D", 1, 1)
+    r.addRoad("A", "B", 1, 1)
+    r.addRoad("A", "C", 1, 1)
+    r.addRoad("B", "D", 1, 1)
+    r.addRoad("C", "D", 1, 1)
 
     parcours = ParcoursReseau(r)   # On crée l’objet permettant d'utiliser BFS/DFS
 
