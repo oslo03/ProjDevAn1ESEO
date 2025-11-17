@@ -1,0 +1,8 @@
+id_trajet,stations,temps_mesure,distance_mesuree
+1,Gare;Centre;Universite;Aeroport,20,
+2,Centre;Hopital;Parc;Mairie;Port,32,
+3,Aeroport;Stade;Piscine;Centre,25,
+4,Zoo;Port;Gare;Centre;Mairie,60,
+5,QuartierNord;Centre;Hopital;Universite,30,
+6,Piscine;Lycee;QuartierNord;Centre;Hopital,48,
+7,Centre;Zoo;Port,18,
