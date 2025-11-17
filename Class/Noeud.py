@@ -37,8 +37,9 @@ class Noeud:
         #Ajoute un nouvel élément au bout de la liste.
         #Paramètres: - nouvel_element : élément à ajouter.
         #Retourne: - Une nouvelle liste avec l'élément ajouté.
-
-        if self.suivant.suivant==None:
+        if self.est_vide():
+            return Noeud(nouvel_element, Noeud.vide())
+        if self.suivant.suivant==None or self.suivant==None:
             nouveau_suivant = Noeud(nouvel_element, Noeud.vide())
             return Noeud(self.valeur, nouveau_suivant)
         return Noeud(self.valeur, self.suivant.ajoute_fin(nouvel_element))
