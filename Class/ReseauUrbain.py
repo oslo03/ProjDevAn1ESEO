@@ -51,6 +51,7 @@ class ReseauUrbain:
     def neighbours(self):
         return "Station "+str(self.nom)+" ID: "+str(self.id)
 
+
     def initMatrices(self):
         return "Station "+str(self.nom)+" ID: "+str(self.id)
 
