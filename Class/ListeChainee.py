@@ -1,6 +1,5 @@
-import Noeud as n
+#import Noeud
 import unittest
-
 from Class.Noeud import Noeud
 
 
