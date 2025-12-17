@@ -64,6 +64,36 @@ class ParcoursReseau:
 
         return visites                           # On renvoie la liste complète du parcours BFS
 
+    # ---------------------------------------------------------
+    # DFS (parcours en profondeur)
+    # ---------------------------------------------------------
+    def dfs(self, station_depart):
+        # Vérifie que la station existe
+        if self._get_station_id(station_depart) is None:
+            raise ValueError("Station inconnue dans le réseau")
+
+        visites = []         # Liste de l’ordre de visite
+        pile = []            # Pile LIFO pour le DFS
+        deja_vu = set()      # Pour ne pas revisiter
+
+        pile.append(station_depart)    # On pousse la station de départ
+
+        while pile:
+            station_courante = pile.pop()   # pop() = dernier entré → premier sorti
+
+            if station_courante not in deja_vu:
+                visites.append(station_courante)   # On visite
+                deja_vu.add(station_courante)
+
+                # On récupère les voisins de cette station
+                # DFS veut aller "profond", donc on empile les voisins
+                # Pour reproduire un ordre logique, on inverse la liste
+                voisins = self._voisins(station_courante)
+                for voisin in reversed(voisins):
+                    if voisin not in deja_vu:
+                        pile.append(voisin)
+
+        return visites
 
 # ============================================================
 # Test du BFS (se lance uniquement si ce fichier est exécuté directement)
@@ -87,3 +117,30 @@ if __name__ == "__main__":
 
     parcours = ParcoursReseau(r)           # Création du module de parcours
     print("BFS depuis A :", parcours.bfs("A"))   # Lancement du BFS depuis "A"
+
+
+# ============================================================
+# Test du DFS (se lance uniquement si ce fichier est exécuté directement)
+# ============================================================
+if __name__ == "__main__":
+    from ReseauUrbain import ReseauUrbain   # On réimporte pour lancer le test
+
+    r = ReseauUrbain("Test")               # Création d’un réseau nommé "Test"
+
+    # Stations (ajoutées dans le réseau)
+    r.addStation("A")
+    r.addStation("B")
+    r.addStation("C")
+    r.addStation("D")
+
+    # Routes entre stations (durée, distance)
+    r.addRoad("A", "B", 1, 1)
+    r.addRoad("A", "C", 1, 1)
+    r.addRoad("B", "D", 1, 1)
+    r.addRoad("C", "D", 1, 1)
+
+    parcours = ParcoursReseau(r)                # Création du module de parcours
+
+    # Tests BFS et DFS
+    print("BFS depuis A :", parcours.bfs("A"))  # Lancement du BFS depuis "A"
+    print("DFS depuis A :", parcours.dfs("A"))  # Lancement du DFS depuis "A"
