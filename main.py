@@ -1,29 +1,24 @@
 from Class.ReseauUrbain import ReseauUrbain
-from csv_files.ReadCSV import printCSV
-
 
 if __name__ == '__main__':
-    #Mon reseau
+
+    # Création du réseau
     reseau = ReseauUrbain("RER B")
 
-    #Les stations de mon reseau
+    # Chargement des stations et des routes depuis les CSV
+    reseau.charger_depuis_csv()
 
-    reseau.addStation("Clichy")
-    reseau.addStation("BarbesRochechoire")
-    reseau.addStation("Sevran")
+    # Affichage du réseau
+    print(reseau)
 
-    #La route de mon reseau, l'intervalle entre de station
-    reseau.addRoad("BarbesRochechoire", "Clichy", 10, 2000)
-    reseau.addRoad("BarbesRochechoire", "Sevran", 20, 4000)
-    reseau.addRoad("Clichy", "BarbesRochechoire", 30, 7000)
-    reseau.addRoad("Clichy", "Sevran", 40, 5000)
-    reseau.addRoad("Sevran", "BarbesRochechoire", 50, 1000)
-    reseau.addRoad("Sevran", "Clichy", 60, 3000)
+    print("\nMatrice des temps :")
+    for ligne in reseau.matrice_temps:
+        print(ligne)
 
-    print("Matrice durées :")
-    print(reseau.timeMat)
+    print("\nMatrice des distances :")
+    for ligne in reseau.matrice_distances:
+        print(ligne)
 
-    print("Matrice distances :")
-    print(reseau.distMat)
-
-    ##printCSV()
+    # Test de la méthode voisins
+    print("\nVoisins de Clichy :")
+    print(reseau.voisins("Clichy"))
