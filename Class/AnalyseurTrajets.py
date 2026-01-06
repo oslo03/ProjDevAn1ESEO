@@ -44,3 +44,40 @@ class AnalyseurTrajets:
             resultats.append((trajet.id_trajet, resultat))
 
         return resultats
+
+    def detection_anomalies(self):
+        anomalies = []  # liste qui contiendra toutes les anomalies détectées
+
+        for trajet in self.trajets_observes:  # on parcourt tous les trajets observés
+            stations = trajet.stations_noms  # récupération de la liste des stations du trajet
+
+            if len(stations) != len(set(stations)):  # comparaison pour savoir si une station apparaît plusieurs fois
+                anomalies.append(f"Boucle détectée dans le trajet {trajet.id_trajet}")  # ajout de l'anomalie
+
+            theorie = self.calcul_theorie_trajet(trajet)  # calcul des valeurs théoriques du trajet
+
+            for depart, arrivee in theorie["segments_inexistants"]:  # parcours des segments inexistants détectés
+                anomalies.append(
+                    f"Route manquante entre {depart} et {arrivee} (trajet {trajet.id_trajet})"
+                )  # signalement d'une route manquante
+
+            temps_theorique = theorie["temps_theorique"]  # récupération du temps théorique total
+            if temps_theorique > 0:  # vérification pour éviter une division ou comparaison inutile
+                if trajet.temps_mesure > 1.3 * temps_theorique:  # seuil de 30 % au-dessus du théorique
+                    anomalies.append(
+                        f"Temps mesuré incohérent pour le trajet {trajet.id_trajet}"
+                    )  # ajout de l'anomalie de temps
+
+            distance_theorique = theorie["distance_theorique"]  # récupération de la distance théorique
+            if distance_theorique > 0:  # vérification que la distance existe
+                if trajet.distance_mesuree > 1.3 * distance_theorique:  # même seuil que pour le temps
+                    anomalies.append(
+                        f"Distance mesurée incohérente pour le trajet {trajet.id_trajet}"
+                    )  # ajout de l'anomalie de distance
+
+            if len(theorie["segments_inexistants"]) > 0:  # si au moins un segment est inexistant
+                anomalies.append(
+                    f"Trajet {trajet.id_trajet} impossible théoriquement"
+                )  # le trajet est considéré comme impossible
+
+        return anomalies  # retour de la liste complète des anomalies
