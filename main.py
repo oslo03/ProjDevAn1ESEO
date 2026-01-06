@@ -11,6 +11,7 @@ if __name__ == '__main__':
     # Affichage du réseau
     print(reseau)
 
+    # Affichage des matrices
     print("\nMatrice des temps :")
     for ligne in reseau.matrice_temps:
         print(ligne)
@@ -19,6 +20,17 @@ if __name__ == '__main__':
     for ligne in reseau.matrice_distances:
         print(ligne)
 
-    # Test de la méthode voisins
-    print("\nVoisins de Clichy :")
-    print(reseau.voisins("Clichy"))
+    # Affichage des stations connues (IMPORTANT pour debug)
+    print("\nStations du réseau :")
+    for nom in reseau.index_par_nom.keys():
+        print("-", nom)
+
+    # Test de la méthode voisins (protégé)
+    station_test = "Clichy"
+
+    print(f"\nVoisins de {station_test} :")
+    try:
+        voisins = reseau.voisins(station_test)
+        print(voisins)
+    except ValueError as e:
+        print("Erreur :", e)
