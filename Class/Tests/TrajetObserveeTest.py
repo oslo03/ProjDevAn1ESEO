@@ -1,5 +1,5 @@
 import unittest
-import TrajetObserve.py
+from Class import TrajetObserve
 
 class TestTrajetObserve(unittest.TestCase):
     def test_converstion(self):
