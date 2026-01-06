@@ -1,40 +1,57 @@
+from Class.Distance import Distance
+
+
 class AnalyseurTrajets:
     def __init__(self, reseau, trajets_observes):
         self.reseau = reseau
         self.trajets_observes = trajets_observes
 
     def calcul_theorie_trajet(self, trajet):
+        # Initialisation de la distance totale
         distance_totale = 0
+
+        # Initialisation du temps total
         temps_total = 0
+
+        # Liste des segments inexistants
         segments_inexistants = []
 
+        # Liste des stations du trajet
         stations = trajet.stations_noms
 
-        for i in range(len(stations) - 1): #parcours les stations
-            depart = stations[i] #station de depart
-            arrivee = stations[i + 1] #station d'arrivee
+        # Parcours des segments du trajet
+        for i in range(len(stations) - 1):
+            # Station de départ
+            depart = stations[i]
 
-            if depart not in self.reseau.index_par_nom or arrivee not in self.reseau.index_par_nom:
+            # Station d’arrivée
+            arrivee = stations[i + 1]
+
+            # Parcours DFS depuis la station de départ
+            stations_accessibles = self.parcours.dfs(depart)
+
+            # Si la station d’arrivée n’est pas atteignable → segment inexistant
+            if arrivee not in stations_accessibles:
                 segments_inexistants.append((depart, arrivee))
                 continue
 
-            i_dep = self.reseau.index_par_nom[depart] #index de station de départ
-            i_arr = self.reseau.index_par_nom[arrivee] #index de station d'arrivee
+            # Récupération des index dans les matrices
+            i_dep = self.reseau.index_par_nom[depart]
+            i_arr = self.reseau.index_par_nom[arrivee]
 
-            dist = self.reseau.matrice_distances[i_dep][i_arr] #distance de : station de départ x station d'arrivee
-            temps = self.reseau.matrice_temps[i_dep][i_arr] # temps de ""
+            # Lecture des valeurs théoriques
+            dist = self.reseau.matrice_distances[i_dep][i_arr]
+            temps = self.reseau.matrice_temps[i_dep][i_arr]
 
+            # Vérification finale de l’existence du segment
             if dist == -1 or temps == -1:
-                segments_inexistants.append((depart, arrivee)) #segment prend la valeur de départ et d'arrivée
+                segments_inexistants.append((depart, arrivee))
             else:
                 distance_totale += dist
                 temps_total += temps
 
-        return {
-            "distance_theorique": distance_totale,
-            "temps_theorique": temps_total,
-            "segments_inexistants": segments_inexistants
-        }
+        # Retourne un objet Distance (et plus un dictionnaire)
+        return Distance(distance_totale, temps_total, segments_inexistants)
 
     def calcul_theorie_tous_trajets(self):
         resultats = []
