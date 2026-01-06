@@ -14,8 +14,8 @@ class AnalyseurTrajets:
             depart = stations[i] #station de depart
             arrivee = stations[i + 1] #station d'arrivee
 
-            if depart not in self.reseau.index_par_nom or arrivee not in self.reseau.index_par_nom:
-                segments_inexistants.append((depart, arrivee))
+            if depart not in self.reseau.index_par_nom or arrivee not in self.reseau.index_par_nom: #TODO: Utiliser les algo DFS plutot que not in, reseau peut contenir beaucoup de données!
+                segments_inexistants.append((depart, arrivee)) #TODO: Cout? vérif si on valide le segment demander avant les calculs.
                 continue
 
             i_dep = self.reseau.index_par_nom[depart] #index de station de départ
@@ -30,6 +30,7 @@ class AnalyseurTrajets:
                 distance_totale += dist
                 temps_total += temps
 
+        #TODO: return une classe de distance -> -couteux
         return {
             "distance_theorique": distance_totale,
             "temps_theorique": temps_total,
