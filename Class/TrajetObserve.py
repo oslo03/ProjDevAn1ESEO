@@ -18,6 +18,7 @@ class TrajetObserve:
             result=result.ajoute_fin(i)
         return result
 
+
 class TestTrajetObserve(unittest.TestCase):
     def test_converstion(self):
         trajOb1=TrajetObserve(1, ["Erasme", "Piscine Olympique"], 12, 2)
@@ -26,4 +27,3 @@ class TestTrajetObserve(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
