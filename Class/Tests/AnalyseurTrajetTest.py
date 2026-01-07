@@ -8,7 +8,7 @@ from Class.Distance import Distance
 
 
 class AnalyseurTrajetTest(unittest.TestCase):
-
+    #Note: avoir plugin de code coverage
     def setUp(self):
         self.reseau = ReseauUrbain("reseau_test")
 

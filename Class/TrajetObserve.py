@@ -13,11 +13,10 @@ class TrajetObserve:
 
     def Conv_Liste_Chainee(self):
         #Création d'une liste chainée avec les données de l'objet.
-        result=LstChaine.ListeChainee(n.Noeud.vide())
+        result=ListeChainee(Noeud.vide())
         for i in self.nomsStations:
             result=result.ajoute_fin(i)
         return result
-
 
 class TestTrajetObserve(unittest.TestCase):
     def test_converstion(self):
