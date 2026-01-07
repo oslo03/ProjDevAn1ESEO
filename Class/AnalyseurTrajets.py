@@ -11,13 +11,21 @@ class AnalyseurTrajets:
         temps_total = 0
         segments_inexistants = []
 
-
         stations = trajet.nomsStations
 
         for i in range(len(stations) - 1):
             depart = stations[i]
             arrivee = stations[i + 1]
 
+            # Utilisation du BFS EXISTANT pour vérifier l’atteignabilité
+            stations_atteignables = self.parcours.bfs(depart)
+
+            # Si l’arrivée n’est pas atteignable → segment inexistant
+            if arrivee not in stations_atteignables:
+                segments_inexistants.append((depart, arrivee))
+                continue
+
+            # Accès aux matrices uniquement après validation BFS
             i_dep = self.reseau.index_par_nom[depart]
             i_arr = self.reseau.index_par_nom[arrivee]
 
