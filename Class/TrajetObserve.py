@@ -1,5 +1,5 @@
-import ListeChainee as LstChaine
-import Noeud as n
+from Class.ListeChainee import ListeChainee
+from Class.Noeud import Noeud
 import unittest
 
 #Classe de trajet observée, avec la liste des stations parcourus et la meusure de temps et de distance.
