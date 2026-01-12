@@ -66,6 +66,21 @@ class AnalyseurTrajets:
 
         return Distance(distance_totale, temps_total, segments_inexistants)
 
+    def calcul_theorie_tous_trajets(self):
+        resultats = []
+
+        for trajet in self.trajets_observes:
+            resultat = self.calcul_theorie_trajet(trajet)
+            resultats.append((trajet.idTraj, resultat))
+
+        return resultats
+
+    #TODO remettre fonction calcul différence tps theorique/concret (en %)
+
+    #Retourne la différence entre le temps de trajet mesuré et celui observé (en pourcentage.)
+    def comparaison_theorie_mesure(self, tpsTheorie, tpsMesure):
+        return (tpsMesure*100)/tpsTheorie
+
     def detection_anomalies(self):
         """
         Détecte l’ensemble des anomalies pour chaque trajet observé.
