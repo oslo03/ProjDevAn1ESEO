@@ -78,27 +78,3 @@ class ParcoursReseau:
 
         return visites                            # On renvoie la liste complète du parcours DFS
 
-
-# ============================================================
-# Test du BFS et du DFS (exécuté uniquement si ce fichier est lancé directement)
-# ============================================================
-if __name__ == "__main__":
-
-    r = ReseauUrbain("Test")               # Création d’un réseau nommé "Test"
-
-    # Stations (ajoutées dans le réseau)
-    r.ajouter_station("A")
-    r.ajouter_station("B")
-    r.ajouter_station("C")
-    r.ajouter_station("D")
-
-    # Routes entre stations (distance, temps)
-    r.ajouter_route("A", "B", 1, 1)
-    r.ajouter_route("A", "C", 1, 1)
-    r.ajouter_route("B", "D", 1, 1)
-    r.ajouter_route("C", "D", 1, 1)
-
-    parcours = ParcoursReseau(r)           # Création du module de parcours
-
-    print("BFS depuis A :", parcours.bfs("A"))   # Lancement du BFS depuis "A"
-    print("DFS depuis A :", parcours.dfs("A"))   # Lancement du DFS depuis "A"
