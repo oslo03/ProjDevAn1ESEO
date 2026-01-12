@@ -14,9 +14,11 @@ class AnalyseurTrajets:
     # ===============================
 
     # Tolérance maximale au-dessus de la valeur théorique (+30 %)
+    # Au-delà, la mesure est considérée comme suspecte
     MAX_RATIO = 1.3
 
     # Tolérance maximale en dessous de la valeur théorique (-30 %)
+    # En dessous, la mesure est considérée comme anormalement faible
     MIN_RATIO = 0.7
 
     def __init__(self, reseau, trajets_observes):
@@ -27,7 +29,9 @@ class AnalyseurTrajets:
         """
         Calcule la distance et le temps théoriques d’un trajet
         en se basant sur les matrices du réseau.
-        Détecte également les segments inexistants.
+
+        Cette méthode permet également d’identifier les segments
+        inexistants entre deux stations consécutives.
         """
 
         distance_totale = 0
@@ -40,24 +44,24 @@ class AnalyseurTrajets:
             depart = stations[i]
             arrivee = stations[i + 1]
 
-            # Utilisation d’un DFS pour vérifier si la station d’arrivée
-            # est atteignable depuis la station de départ
+            # Vérifie, via un parcours en profondeur (DFS),
+            # si la station d’arrivée est atteignable depuis la station de départ
             stations_atteignables = self.parcours.dfs(depart)
 
-            # Si la station d’arrivée n’est pas atteignable,
-            # le segment est considéré comme inexistant
+            # Si l’arrivée n’est pas atteignable, le segment est inexistant
+            # Le calcul théorique ne peut pas continuer sur ce segment
             if arrivee not in stations_atteignables:
                 segments_inexistants.append((depart, arrivee))
                 continue
 
-            # Accès aux matrices uniquement après validation du DFS
+            # Accès aux indices des stations dans les matrices du réseau
             i_dep = self.reseau.index_par_nom[depart]
             i_arr = self.reseau.index_par_nom[arrivee]
 
             dist = self.reseau.matrice_distances[i_dep][i_arr]
             temps = self.reseau.matrice_temps[i_dep][i_arr]
 
-            # Une valeur négative indique une liaison invalide ou absente
+            # Une valeur négative indique une liaison absente ou invalide
             if dist < 0 or temps < 0:
                 segments_inexistants.append((depart, arrivee))
             else:
@@ -67,6 +71,9 @@ class AnalyseurTrajets:
         return Distance(distance_totale, temps_total, segments_inexistants)
 
     def calcul_theorie_tous_trajets(self):
+        """
+        Calcule les valeurs théoriques pour l’ensemble des trajets observés.
+        """
         resultats = []
 
         for trajet in self.trajets_observes:
@@ -75,150 +82,158 @@ class AnalyseurTrajets:
 
         return resultats
 
-    #TODO remettre fonction calcul différence tps theorique/concret (en %)
-
-    #Retourne la différence entre le temps de trajet mesuré et celui observé (en pourcentage.)
+    # Retourne la différence entre le temps de trajet mesuré
+    # et le temps théorique, exprimée en pourcentage
     def comparaison_theorie_mesure(self, tpsTheorie, tpsMesure):
-        return (tpsMesure*100)/tpsTheorie
+        return (tpsMesure * 100) / tpsTheorie
 
     def detection_anomalies(self):
         """
         Détecte l’ensemble des anomalies pour chaque trajet observé.
 
-        Le résultat est un dictionnaire structuré afin de :
-        - regrouper les anomalies par trajet
-        - distinguer clairement les différents types d’anomalies
-        - faciliter l’analyse, l’affichage et les traitements futurs
+        Les anomalies sont classées par niveau de gravité :
+        - ALERTE    : erreur critique rendant le trajet invalide ou inutilisable
+        - ATTENTION : incohérence importante nécessitant une vérification
+        - NOTICE    : anomalie mineure ou informative
         """
 
-        # Dictionnaire principal des anomalies
-        # Clé   : identifiant du trajet (idTraj)
-        # Valeur: dictionnaire contenant les anomalies de ce trajet
         anomalies = {}
 
         for trajet in self.trajets_observes:
-            traj_id = trajet.idTraj
-            stations = trajet.nomsStations
+            # Récupération sécurisée de l’identifiant du trajet
+            traj_id = getattr(trajet, "idTraj", "INCONNU")
 
-            # Initialisation de la structure d’anomalies pour un trajet donné.
-            # Chaque trajet possède son propre sous-dictionnaire,
-            # ce qui permet d’isoler clairement les problèmes trajet par trajet.
             anomalies[traj_id] = {
-
-                # Anomalies liées au format du CSV et aux données d’entrée.
-                # On y place toutes les erreurs empêchant une analyse correcte.
                 "FORMAT": [],
-
-                # Anomalies liées à la logique du trajet ou au réseau.
-                # Elles indiquent que le trajet est incohérent ou impossible.
                 "LOGIQUE": [],
-
-                # Anomalies liées à la comparaison entre mesures et théorie.
-                # Elles signalent des écarts anormaux dans les données mesurées.
                 "MESURE": []
             }
 
             # ======================================================
-            # ANOMALIES DE FORMAT / DONNÉES CSV
+            # FORMAT — VÉRIFICATION DES COLONNES CSV
             # ======================================================
 
-            # Un trajet sans station est invalide.
-            # Cela correspond généralement à une ligne vide ou corrompue dans le CSV.
+            # Liste des colonnes obligatoires attendues dans le CSV.
+            # Leur absence indique un problème structurel du fichier.
+            colonnes_attendues = [
+                "idTraj",
+                "nomsStations",
+                "tpsMesure",
+                "distMesure"
+            ]
+
+            # Vérifie que chaque colonne attendue est bien présente
+            # dans l’objet trajet issu du CSV
+            for colonne in colonnes_attendues:
+                if not hasattr(trajet, colonne):
+                    anomalies[traj_id]["FORMAT"].append(
+                        f"[ALERTE] Colonne CSV manquante : {colonne}"
+                    )
+
+            # Si une colonne obligatoire manque, le trajet est inutilisable
+            # Il est inutile de poursuivre l’analyse
+            if anomalies[traj_id]["FORMAT"]:
+                continue
+
+            stations = trajet.nomsStations
+
+            # ======================================================
+            # FORMAT — COHÉRENCE DES DONNÉES CSV
+            # ======================================================
+
+            # Aucun arrêt n’est renseigné : le trajet est vide
             if not stations or len(stations) == 0:
                 anomalies[traj_id]["FORMAT"].append(
-                    "Aucune station renseignée dans le CSV"
+                    "[ALERTE] Aucune station renseignée dans le CSV"
                 )
                 continue
 
-            # Un trajet avec une seule station ne représente aucun déplacement.
-            # Il est donc incohérent d’un point de vue fonctionnel.
+            # Une seule station ne correspond à aucun déplacement réel
             if len(stations) == 1:
                 anomalies[traj_id]["FORMAT"].append(
-                    "Une seule station renseignée (trajet invalide)"
+                    "[ALERTE] Une seule station renseignée (trajet invalide)"
                 )
 
-            # Chaque station du CSV doit exister dans le réseau.
-            # Une station inconnue indique une erreur de saisie ou de référentiel.
+            # Vérifie que chaque station du CSV existe bien dans le réseau
             for station in stations:
                 if station not in self.reseau.index_par_nom:
                     anomalies[traj_id]["FORMAT"].append(
-                        f"Station inconnue dans le réseau : {station}"
+                        f"[ALERTE] Station inconnue dans le réseau : {station}"
                     )
 
-            # Les valeurs mesurées sont indispensables pour toute analyse.
-            # Leur absence empêche toute comparaison avec la théorie.
+            # Les valeurs mesurées sont indispensables pour toute comparaison
             if trajet.tpsMesure is None or trajet.distMesure is None:
                 anomalies[traj_id]["FORMAT"].append(
-                    "Valeurs mesurées manquantes (temps ou distance)"
+                    "[ALERTE] Valeurs mesurées manquantes (temps ou distance)"
                 )
                 continue
 
-            # Des valeurs négatives pour le temps ou la distance
-            # sont physiquement impossibles.
+            # Des valeurs négatives sont physiquement impossibles
             if trajet.tpsMesure < 0 or trajet.distMesure < 0:
                 anomalies[traj_id]["FORMAT"].append(
-                    "Valeurs mesurées négatives"
+                    "[ALERTE] Valeurs mesurées négatives"
                 )
 
-            # Une distance strictement positive avec un temps nul
-            # viole les contraintes physiques élémentaires.
+            # Une distance non nulle avec un temps nul est incohérente
             if trajet.distMesure > 0 and trajet.tpsMesure == 0:
                 anomalies[traj_id]["FORMAT"].append(
-                    "Distance positive avec temps nul"
+                    "[ALERTE] Distance positive avec temps nul"
                 )
 
             # ======================================================
-            # ANOMALIES LOGIQUES
+            # LOGIQUE — COHÉRENCE DU TRAJET
             # ======================================================
 
-            # La répétition d’une station indique une boucle dans le trajet.
-            # Cela peut révéler un comportement anormal ou une erreur de données.
+            # La répétition d’une station indique une boucle
+            # Cela peut être une erreur de données ou un comportement anormal
             if len(stations) != len(set(stations)):
                 anomalies[traj_id]["LOGIQUE"].append(
-                    "Boucle détectée (station répétée)"
+                    "[ATTENTION] Boucle détectée (station répétée)"
                 )
 
             theorie = self.calcul_theorie_trajet(trajet)
 
-            # Chaque segment inexistant correspond à une liaison absente du réseau.
+            # Chaque segment inexistant correspond à une rupture du réseau
             for depart, arrivee in theorie.segments_inexistants:
                 anomalies[traj_id]["LOGIQUE"].append(
-                    f"Route inexistante entre {depart} et {arrivee}"
+                    f"[ALERTE] Route inexistante entre {depart} et {arrivee}"
                 )
 
             # Si au moins un segment est impossible,
-            # alors le trajet entier est irréalisable théoriquement.
+            # le trajet entier est irréalisable théoriquement
             if len(theorie.segments_inexistants) > 0:
                 anomalies[traj_id]["LOGIQUE"].append(
-                    "Trajet théoriquement impossible"
+                    "[ALERTE] Trajet théoriquement impossible"
                 )
 
             # ======================================================
-            # COMPARAISON MESURÉ / THÉORIQUE
+            # MESURE — COMPARAISON MESURÉ / THÉORIQUE
             # ======================================================
 
-            # Comparaison du temps mesuré avec le temps théorique.
-            # Un écart trop important suggère une anomalie de mesure ou de données.
+            # Un temps trop élevé peut indiquer une erreur de mesure
+            # ou un événement anormal durant le trajet
             if theorie.temps_theorique > 0:
                 if trajet.tpsMesure > self.MAX_RATIO * theorie.temps_theorique:
                     anomalies[traj_id]["MESURE"].append(
-                        "Temps mesuré trop élevé par rapport à la théorie"
-                    )
-                elif trajet.tpsMesure < self.MIN_RATIO * theorie.temps_theorique:
-                    anomalies[traj_id]["MESURE"].append(
-                        "Temps mesuré trop faible par rapport à la théorie"
+                        "[ATTENTION] Temps mesuré trop élevé par rapport à la théorie"
                     )
 
-            # Comparaison de la distance mesurée avec la distance théorique.
-            # Des écarts significatifs peuvent indiquer des erreurs GPS ou de saisie.
+                # Un temps trop faible est souvent informatif
+                # (erreur d’arrondi, données approximatives)
+                elif trajet.tpsMesure < self.MIN_RATIO * theorie.temps_theorique:
+                    anomalies[traj_id]["MESURE"].append(
+                        "[NOTICE] Temps mesuré trop faible par rapport à la théorie"
+                    )
+
+            # Même logique pour la distance mesurée
             if theorie.distance_theorique > 0:
                 if trajet.distMesure > self.MAX_RATIO * theorie.distance_theorique:
                     anomalies[traj_id]["MESURE"].append(
-                        "Distance mesurée trop élevée par rapport à la théorie"
+                        "[ATTENTION] Distance mesurée trop élevée par rapport à la théorie"
                     )
                 elif trajet.distMesure < self.MIN_RATIO * theorie.distance_theorique:
                     anomalies[traj_id]["MESURE"].append(
-                        "Distance mesurée trop faible par rapport à la théorie"
+                        "[NOTICE] Distance mesurée trop faible par rapport à la théorie"
                     )
 
         return anomalies
