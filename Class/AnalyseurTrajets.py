@@ -51,6 +51,10 @@ class AnalyseurTrajets:
 
     #TODO remettre fonction calcul différence tps theorique/concret (en %)
 
+    #Retourne la différence entre le temps de trajet mesuré et celui observé (en pourcentage.)
+    def comparaison_theorie_mesure(self, tpsTheorie, tpsMesure):
+        return (tpsMesure*100)/tpsTheorie
+
     def detection_anomalies(self):
         #TODO: controller les anomalies du format
         # Inchohérence temps: Temps trop petit pour un trajet
