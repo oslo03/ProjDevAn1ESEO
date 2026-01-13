@@ -14,7 +14,7 @@ def afficher_menu():
     print("5 - Plus court chemin (distance)")
     print("6 - Comparer deux trajets")
     print("0 - Quitter")
-    return input("Choix : ").striph()
+    return input("Choix : ").strip()
 
 
 # VÉRIFICATION D'UNE STATION
