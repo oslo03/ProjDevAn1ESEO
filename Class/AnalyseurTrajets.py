@@ -237,3 +237,11 @@ class AnalyseurTrajets:
                     )
 
         return anomalies
+
+if __name__ == "__main__":
+    analyseur=AnalyseurTrajets(None, None)
+    print("BLABLABLA:")
+    print("Temps theorique depassant le temps mesure:")
+    print(str(analyseur.comparaison_theorie_mesure(50, 65))+"%")
+    print("Temps mesure depassant le temps theorique:")
+    print(str(analyseur.comparaison_theorie_mesure(65, 50))+"%")
